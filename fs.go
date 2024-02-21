@@ -9,79 +9,79 @@ import (
 )
 
 func NewFS[T Object](dir string) (Client[T], error) {
-    // Check if dir exists and is a directory
-    fileInfo, err := os.Stat(dir)
-    if err != nil {
-        return nil, err
-    }
+	// Check if dir exists and is a directory
+	fileInfo, err := os.Stat(dir)
+	if err != nil {
+		return nil, err
+	}
 
-    if !fileInfo.IsDir() {
-        return nil, fmt.Errorf("%s is not a directory", dir)
-    }
+	if !fileInfo.IsDir() {
+		return nil, fmt.Errorf("%s is not a directory", dir)
+	}
 
-    return &fsClient[T]{dir: dir}, nil
+	return &fsClient[T]{dir: dir}, nil
 }
 
 type fsClient[T Object] struct {
-    dir string
+	dir string
 }
 
 func (f fsClient[T]) path(id string) string {
-    return filepath.Join(f.dir, fmt.Sprintf("%s.json", id))
+	return filepath.Join(f.dir, fmt.Sprintf("%s.json", id))
 }
 
 func (f *fsClient[T]) Write(data T) error {
-    byts, err := json.Marshal(data)
-    if err != nil {
-        return err
-    }
-    return os.WriteFile(f.path(data.ID()), byts, 0644)
+	byts, err := json.Marshal(data)
+	if err != nil {
+		return err
+	}
+	return os.WriteFile(f.path(data.ID()), byts, 0644)
 }
 
 func (f *fsClient[T]) Read(id string) (T, error) {
-    var res T
-    byts, err := os.ReadFile(f.path(id))
-    if err != nil {
-        if os.IsNotExist(err) {
-            return res, NotFoundError{id: id}
-        }
-        return res, err
-    }
-    
-    err = json.Unmarshal(byts, &res)
-    return res, err
+	var res T
+	byts, err := os.ReadFile(f.path(id))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return res, NotFoundError{id: id}
+		}
+		return res, err
+	}
+
+	err = json.Unmarshal(byts, &res)
+	return res, err
 }
 
 func (f *fsClient[T]) List() ([]T, error) {
-    res := make([]T, 0)
+	res := make([]T, 0)
 
-    files, err := os.ReadDir(f.dir)
-    if err != nil {
-        return nil, err
-    }
-    
-    // TODO: this would probably be faster using goroutines
-    for _, file := range files {
-        if file.IsDir() {
-            continue
-        }
-        id := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
-        obj, err := f.Read(id)
-        if err != nil {
-            return nil, err
-        }
-        res = append(res, obj)
-    }
-    return res, nil
+	files, err := os.ReadDir(f.dir)
+	if err != nil {
+		return nil, err
+	}
+
+	// TODO: this would probably be faster using goroutines
+	for _, file := range files {
+		if file.IsDir() {
+			continue
+		}
+		id := strings.TrimSuffix(file.Name(), filepath.Ext(file.Name()))
+		obj, err := f.Read(id)
+		if err != nil {
+			return nil, err
+		}
+		res = append(res, obj)
+	}
+	return res, nil
 }
 
 func (f *fsClient[T]) Delete(id string) error {
-    err := os.Remove(f.path(id))
-    if err != nil {
-        if os.IsNotExist(err) {
-            return NotFoundError{id: id}
-        }
-        return err
-    }
-    return nil
+	err := os.Remove(f.path(id))
+	if err != nil {
+		if os.IsNotExist(err) {
+			return NotFoundError{id: id}
+		}
+		return err
+	}
+	return nil
 }
