@@ -1,11 +1,7 @@
 package jsondb
 
-type Object interface {
-	ID() string
-}
-
-type Client[T Object] interface {
-	Write(data T) error
+type Client[T any] interface {
+	Write(id string, data T) error
 	Read(id string) (T, error)
 	List() ([]T, error)
 	Delete(id string) error

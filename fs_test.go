@@ -8,12 +8,7 @@ import (
 )
 
 type testObject struct {
-	Id    string `json:"id"`
-	Value int    `json:"int"`
-}
-
-func (t testObject) ID() string {
-	return t.Id
+	Value int `json:"int"`
 }
 
 func TestFsClient_Write(t *testing.T) {
@@ -27,7 +22,7 @@ func TestFsClient_Write(t *testing.T) {
 	}
 
 	// Write a new object
-	err = client.Write(testObject{Id: "1", Value: 1})
+	err = client.Write("1", testObject{Value: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -42,7 +37,7 @@ func TestFsClient_Write(t *testing.T) {
 	}
 
 	// Ensure files are overwritten
-	err = client.Write(testObject{Id: "1", Value: 2})
+	err = client.Write("1", testObject{Value: 2})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -66,7 +61,7 @@ func TestFsClient_Read(t *testing.T) {
 	}
 
 	// Write a new object
-	err = client.Write(testObject{Id: "1", Value: 1})
+	err = client.Write("1", testObject{Value: 1})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -99,7 +94,7 @@ func TestFsClient_List(t *testing.T) {
 
 	// Write a few objects
 	for i := 0; i < 10; i++ {
-		err = client.Write(testObject{Id: strconv.Itoa(i), Value: i})
+		err = client.Write(strconv.Itoa(i), testObject{Value: i})
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -128,7 +123,7 @@ func TestFsClient_Delete(t *testing.T) {
 	}
 
 	// Write a new object
-	err = client.Write(testObject{Id: "1", Value: 1})
+	err = client.Write("1", testObject{Value: 1})
 	if err != nil {
 		t.Fatal(err)
 	}

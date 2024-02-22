@@ -8,7 +8,7 @@ import (
 	"strings"
 )
 
-func NewFS[T Object](dir string) (Client[T], error) {
+func NewFS[T any](dir string) (Client[T], error) {
 	// Check if dir exists and is a directory
 	fileInfo, err := os.Stat(dir)
 	if err != nil {
@@ -22,7 +22,7 @@ func NewFS[T Object](dir string) (Client[T], error) {
 	return &fsClient[T]{dir: dir}, nil
 }
 
-type fsClient[T Object] struct {
+type fsClient[T any] struct {
 	dir string
 }
 
@@ -30,12 +30,12 @@ func (f fsClient[T]) path(id string) string {
 	return filepath.Join(f.dir, fmt.Sprintf("%s.json", id))
 }
 
-func (f *fsClient[T]) Write(data T) error {
+func (f *fsClient[T]) Write(id string, data T) error {
 	byts, err := json.Marshal(data)
 	if err != nil {
 		return err
 	}
-	return os.WriteFile(f.path(data.ID()), byts, 0644)
+	return os.WriteFile(f.path(id), byts, 0644)
 }
 
 func (f *fsClient[T]) Read(id string) (T, error) {
